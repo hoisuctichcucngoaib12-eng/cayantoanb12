@@ -18,3 +18,4 @@ Một website nhỏ để gửi và xem lại lời nhắn dưới dạng một 
 4. `netlify.toml` đã cấu hình publish directory và functions directory.
 
 Netlify Functions dùng file `.mjs` trong `netlify/functions/` với default handler nhận `Request` và trả về `Response`.
+
