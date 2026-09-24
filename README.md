@@ -1,4 +1,4 @@
-# Cây Lời Nhắn — phiên bản 2
+# Cây an toàn người bệnh B12
 
 Một website nhỏ để gửi và xem lại lời nhắn dưới dạng một cái cây. Mỗi lời nhắn trở thành một chiếc lá có màu sắc tự nhiên khác nhau.
 
@@ -17,5 +17,14 @@ Một website nhỏ để gửi và xem lại lời nhắn dưới dạng một 
 3. Chọn repository và deploy.
 4. `netlify.toml` đã cấu hình publish directory và functions directory.
 
-Netlify Functions dùng file `.mjs` trong `netlify/functions/` với default handler nhận `Request` và trả về `Response`.
+Netlify Functions dùng TypeScript trong `netlify/functions/` với default handler nhận `Request` và trả về `Response`.
 
+## Thiết lập tài khoản quản trị
+
+Chức năng xóa lá được bảo vệ bằng Netlify Identity và chỉ xuất hiện với tài khoản có vai trò `admin`.
+
+1. Mở **Identity** trong trang quản trị dự án Netlify.
+2. Chuyển chế độ đăng ký sang **Invite only** để không cho người lạ tự tạo tài khoản.
+3. Chọn **Invite users** và gửi lời mời đến email quản trị viên.
+4. Sau khi tài khoản chấp nhận lời mời, mở tài khoản đó và thêm vai trò `admin` trong mục **Roles**.
+5. Trên website, chọn **Quản trị** để đăng nhập. Quản trị viên có thể mở một lá để xóa riêng lá đó hoặc chọn **Xóa toàn bộ lá**.

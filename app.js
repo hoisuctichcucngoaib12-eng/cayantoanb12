@@ -2,7 +2,7 @@ const API_URL = "/api/messages";
 const LOCAL_KEY = "message-tree-v2";
 const LEGACY_LOCAL_KEY = "message-tree-v1";
 
-const state = { messages: [], apiAvailable: true };
+const state = { messages: [], apiAvailable: true, admin: false, currentMessageId: null };
 
 // Positions are spread along the real branch silhouette rather than a simple grid.
 const leafPositions = [
@@ -32,11 +32,40 @@ const modalMessage = document.getElementById("modalMessage");
 const modalAuthor = document.getElementById("modalAuthor");
 const modalDate = document.getElementById("modalDate");
 const modalTitle = document.getElementById("modalTitle");
+const adminEntry = document.getElementById("adminEntry");
+const adminPanel = document.getElementById("adminPanel");
+const adminStatus = document.getElementById("adminStatus");
+const deleteAllButton = document.getElementById("deleteAllButton");
+const logoutButton = document.getElementById("logoutButton");
+const deleteMessageButton = document.getElementById("deleteMessageButton");
+const loginBackdrop = document.getElementById("loginBackdrop");
+const loginClose = document.getElementById("loginClose");
+const adminLoginForm = document.getElementById("adminLoginForm");
+const adminEmail = document.getElementById("adminEmail");
+const adminPassword = document.getElementById("adminPassword");
+const loginStatus = document.getElementById("loginStatus");
+const loginButton = document.getElementById("loginButton");
 
 messageInput.addEventListener("input", () => { messageCount.textContent = messageInput.value.length; });
 modalClose.addEventListener("click", closeModal);
 modalBackdrop.addEventListener("click", (event) => { if (event.target === modalBackdrop) closeModal(); });
-document.addEventListener("keydown", (event) => { if (event.key === "Escape") closeModal(); });
+document.addEventListener("keydown", (event) => {
+  if (event.key !== "Escape") return;
+  if (!loginBackdrop.hidden) closeLogin();
+  else if (!modalBackdrop.hidden) closeModal();
+});
+adminEntry.addEventListener("click", () => {
+  if (state.admin) {
+    adminPanel.scrollIntoView({ behavior: "smooth", block: "center" });
+  } else {
+    openLogin();
+  }
+});
+loginClose.addEventListener("click", closeLogin);
+loginBackdrop.addEventListener("click", (event) => { if (event.target === loginBackdrop) closeLogin(); });
+deleteMessageButton.addEventListener("click", deleteCurrentMessage);
+deleteAllButton.addEventListener("click", deleteAllMessages);
+logoutButton.addEventListener("click", logoutAdmin);
 
 function makeId() {
   return globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(16).slice(2)}`;
@@ -72,12 +101,22 @@ async function loadMessages() {
     if (!response.ok) throw new Error("API unavailable");
     const data = await response.json();
     state.apiAvailable = true;
+    state.admin = data.admin === true;
     state.messages = Array.isArray(data.messages) ? data.messages.map(normalizeMessage) : [];
   } catch {
     state.apiAvailable = false;
+    state.admin = false;
     state.messages = localRead();
   }
   renderLeaves();
+  renderAdmin();
+}
+
+function renderAdmin() {
+  adminPanel.hidden = !state.admin;
+  adminEntry.textContent = state.admin ? "Đang quản trị" : "Quản trị";
+  adminEntry.classList.toggle("active", state.admin);
+  deleteMessageButton.hidden = !state.admin || !state.currentMessageId;
 }
 
 function hashString(value) {
@@ -150,18 +189,109 @@ function formatDate(iso) {
 }
 
 function openModal(message) {
+  state.currentMessageId = message.id;
   modalDate.textContent = formatDate(message.createdAt);
   modalTitle.textContent = `Lời nhắn của ${message.author}`;
   modalMessage.textContent = message.message;
   modalAuthor.textContent = message.author === "Ẩn danh" ? "— Gửi bởi một người ẩn danh —" : `— ${message.author} —`;
   modalBackdrop.hidden = false;
   document.body.style.overflow = "hidden";
+  renderAdmin();
   modalClose.focus();
 }
 
 function closeModal() {
   modalBackdrop.hidden = true;
+  state.currentMessageId = null;
+  deleteMessageButton.hidden = true;
   document.body.style.overflow = "";
+}
+
+function openLogin() {
+  loginStatus.textContent = "";
+  loginBackdrop.hidden = false;
+  document.body.style.overflow = "hidden";
+  setTimeout(() => adminEmail.focus(), 0);
+}
+
+function closeLogin() {
+  loginBackdrop.hidden = true;
+  document.body.style.overflow = "";
+  adminLoginForm.reset();
+}
+
+adminLoginForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  loginButton.disabled = true;
+  loginStatus.textContent = "Đang xác thực…";
+  loginStatus.className = "form-status";
+
+  try {
+    const response = await fetch("/api/admin/session", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify({ email: adminEmail.value.trim(), password: adminPassword.value }),
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || "Không thể đăng nhập.");
+    window.location.reload();
+  } catch (error) {
+    loginStatus.textContent = error.message || "Không thể đăng nhập.";
+    loginStatus.className = "form-status error";
+    loginButton.disabled = false;
+  }
+});
+
+async function deleteCurrentMessage() {
+  const id = state.currentMessageId;
+  if (!state.admin || !id) return;
+  if (!window.confirm("Xóa vĩnh viễn chiếc lá này?")) return;
+
+  deleteMessageButton.disabled = true;
+  try {
+    const response = await fetch(`${API_URL}/${encodeURIComponent(id)}`, { method: "DELETE" });
+    if (!response.ok) throw new Error("Không thể xóa chiếc lá.");
+    state.messages = state.messages.filter((message) => message.id !== id);
+    closeModal();
+    renderLeaves();
+    showAdminStatus("Đã xóa chiếc lá.", "success");
+  } catch (error) {
+    showAdminStatus(error.message || "Không thể xóa chiếc lá.", "error");
+  } finally {
+    deleteMessageButton.disabled = false;
+  }
+}
+
+async function deleteAllMessages() {
+  if (!state.admin || !state.messages.length) return;
+  if (!window.confirm(`Xóa vĩnh viễn toàn bộ ${state.messages.length} chiếc lá? Thao tác này không thể hoàn tác.`)) return;
+
+  deleteAllButton.disabled = true;
+  try {
+    const response = await fetch(API_URL, { method: "DELETE" });
+    if (!response.ok) throw new Error("Không thể xóa toàn bộ lá.");
+    state.messages = [];
+    renderLeaves();
+    showAdminStatus("Đã xóa toàn bộ lá.", "success");
+  } catch (error) {
+    showAdminStatus(error.message || "Không thể xóa toàn bộ lá.", "error");
+  } finally {
+    deleteAllButton.disabled = false;
+  }
+}
+
+async function logoutAdmin() {
+  logoutButton.disabled = true;
+  try {
+    await fetch("/api/admin/session", { method: "DELETE" });
+  } finally {
+    window.location.reload();
+  }
+}
+
+function showAdminStatus(message, type = "") {
+  adminStatus.textContent = message;
+  adminStatus.className = `admin-status ${type}`.trim();
 }
 
 function setStatus(message, type = "") {
