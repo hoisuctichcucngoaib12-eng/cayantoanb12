@@ -57,6 +57,14 @@ button { cursor: pointer; }
   line-height: 1.7;
   font-size: 15px;
 }
+.hero-actions { display: flex; align-items: center; gap: 10px; }
+.admin-entry {
+  min-height: 42px; padding: 0 14px;
+  border: 1px solid var(--line); border-radius: 14px;
+  background: rgba(255,255,255,.5); color: var(--green-dark);
+  font-size: 12px; font-weight: 700;
+}
+.admin-entry.active { background: var(--green-dark); color: #fff; }
 .leaf-count {
   min-width: 126px;
   padding: 15px 16px 13px;
@@ -214,6 +222,28 @@ button { cursor: pointer; }
 .fallen-olive { left: 67%; bottom: 24px; background:#7f8b48; transform:rotate(-31deg) scale(.82); }
 .fallen-dry { left: 75%; bottom: 53px; background:#ae7142; transform:rotate(9deg) scale(.65); }
 
+.admin-panel {
+  position: relative;
+  margin-top: 16px; padding: 18px 20px;
+  display: flex; align-items: center; justify-content: space-between; gap: 18px;
+  border: 1px solid rgba(126,67,50,.18); border-radius: 20px;
+  background: rgba(255,248,235,.9); box-shadow: 0 12px 34px rgba(74,68,43,.08);
+}
+.admin-panel[hidden] { display: none; }
+.admin-panel strong, .admin-panel span { display: block; }
+.admin-panel strong { color: var(--green-dark); font-size: 14px; }
+.admin-panel span { margin-top: 4px; color: var(--muted); font-size: 12px; }
+.admin-panel-actions { display: flex; gap: 9px; flex: 0 0 auto; }
+.danger-button, .quiet-button, .modal-delete {
+  min-height: 42px; padding: 0 14px; border-radius: 13px; font-weight: 700; font-size: 12px;
+}
+.danger-button, .modal-delete { border: 0; background: #a65343; color: #fff; }
+.quiet-button { border: 1px solid var(--line); background: #fffaf0; color: var(--ink); }
+.danger-button:disabled, .quiet-button:disabled, .modal-delete:disabled { opacity: .55; cursor: wait; }
+.admin-status { position: absolute; left: 20px; bottom: -24px; margin: 0; font-size: 12px; }
+.admin-status.success { color: var(--green-dark); }
+.admin-status.error { color: #a65343; }
+
 .composer-card {
   margin-top: 22px;
   padding: 27px;
@@ -289,6 +319,10 @@ button { cursor: pointer; }
 .message-modal h2 { margin: 8px 0 13px; font: 700 29px/1.15 "Playfair Display", Georgia, serif; }
 .message-modal p { margin: 0; white-space: pre-wrap; font-size: 16px; line-height: 1.85; color: #3c3e34; }
 .modal-author { margin-top: 22px; padding-top: 16px; border-top: 1px solid rgba(75,78,56,.1); font-size: 13px; color: var(--green-dark); font-weight: 700; }
+.modal-delete { margin-top: 18px; }
+.login-modal h2 { margin-bottom: 22px; }
+.login-modal form { display: grid; gap: 15px; }
+.login-modal .send-button { justify-self: end; }
 
 @keyframes leafIn { from { opacity: 0; transform: translate(-50%, -50%) rotate(var(--rot)) scale(.45); } to { opacity: 1; transform: translate(-50%, -50%) rotate(var(--rot)) scale(1); } }
 @keyframes leafPop { 0% { opacity: 0; transform: translate(-50%, -50%) rotate(var(--rot)) scale(.08); } 68% { opacity: 1; transform: translate(-50%, -50%) rotate(var(--rot)) scale(1.18); } 100% { opacity: 1; transform: translate(-50%, -50%) rotate(var(--rot)) scale(1); } }
@@ -297,6 +331,7 @@ button { cursor: pointer; }
 @media (max-width: 760px) {
   .page-shell { width: min(100% - 20px, 1080px); padding-top: 26px; }
   .hero { align-items: start; }
+  .hero-actions { flex-direction: column-reverse; align-items: end; }
   .leaf-count { min-width: 96px; }
   .field-row { grid-template-columns: 1fr; }
   .tree-stage { min-height: 475px; height: 116vw; max-height: 680px; }
@@ -305,10 +340,13 @@ button { cursor: pointer; }
   .send-button { width: 100%; }
   .form-status { min-height: auto; }
   .leaf { width: 42px; height: 58px; }
+  .admin-panel { align-items: stretch; flex-direction: column; }
+  .admin-panel-actions { flex-wrap: wrap; }
 }
 
 @media (max-width: 480px) {
   .hero { flex-direction: column; gap: 15px; }
+  .hero-actions { width: 100%; flex-direction: row; justify-content: space-between; align-items: center; }
   .leaf-count { width: fit-content; }
   .hero p { font-size: 14px; }
   .tree-stage { min-height: 430px; }

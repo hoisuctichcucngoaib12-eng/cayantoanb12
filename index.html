@@ -19,9 +19,12 @@
         <h1>Cây an toàn người bệnh B12</h1>
         <p>Mỗi lời nhắn bạn gửi đi sẽ hóa thành một chiếc lá.<br>Chạm vào một chiếc lá để đọc câu chuyện phía sau.</p>
       </div>
-      <div class="leaf-count" aria-live="polite">
-        <span id="leafCount">0</span>
-        <small>chiếc lá</small>
+      <div class="hero-actions">
+        <button class="admin-entry" id="adminEntry" type="button">Quản trị</button>
+        <div class="leaf-count" aria-live="polite">
+          <span id="leafCount">0</span>
+          <small>chiếc lá</small>
+        </div>
       </div>
     </header>
 
@@ -127,6 +130,18 @@
       </div>
     </section>
 
+    <section class="admin-panel" id="adminPanel" hidden aria-label="Công cụ quản trị">
+      <div>
+        <strong>Chế độ quản trị đang bật</strong>
+        <span>Bạn có thể mở từng chiếc lá để xóa, hoặc xóa toàn bộ cây.</span>
+      </div>
+      <div class="admin-panel-actions">
+        <button class="danger-button" id="deleteAllButton" type="button">Xóa toàn bộ lá</button>
+        <button class="quiet-button" id="logoutButton" type="button">Đăng xuất</button>
+      </div>
+      <p class="admin-status" id="adminStatus" role="status" aria-live="polite"></p>
+    </section>
+
     <section class="composer-card" aria-labelledby="composerTitle">
       <div class="composer-heading">
         <div>
@@ -169,6 +184,27 @@
       <h2 id="modalTitle">Lời nhắn</h2>
       <p id="modalMessage"></p>
       <div class="modal-author" id="modalAuthor"></div>
+      <button class="modal-delete" id="deleteMessageButton" type="button" hidden>Xóa chiếc lá này</button>
+    </article>
+  </div>
+
+  <div class="modal-backdrop" id="loginBackdrop" hidden>
+    <article class="message-modal login-modal" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
+      <button class="modal-close" id="loginClose" type="button" aria-label="Đóng">×</button>
+      <span class="section-kicker">Khu vực bảo vệ</span>
+      <h2 id="loginTitle">Đăng nhập quản trị</h2>
+      <form id="adminLoginForm">
+        <label class="field">
+          <span>Email</span>
+          <input id="adminEmail" name="email" type="email" autocomplete="username" required />
+        </label>
+        <label class="field">
+          <span>Mật khẩu</span>
+          <input id="adminPassword" name="password" type="password" autocomplete="current-password" required />
+        </label>
+        <p class="form-status" id="loginStatus" role="status" aria-live="polite"></p>
+        <button class="send-button" id="loginButton" type="submit">Đăng nhập</button>
+      </form>
     </article>
   </div>
 
